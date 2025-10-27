@@ -10,5 +10,103 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://postgres:mt@localhost:5433/TesvanPlatformV2?schema=public"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  firstName String
+  lastName  String?
+  imageUrl  String?
+  phone     String?
+  password  String
+  status    Boolean  @default(false)
+  role      Role     @default(STUDENT)
+  creatorId Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdCourses Course[]
+  taughtCourses  CourseTeachers[]
+  groups         Groups[]
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+  SUPERADMIN
+}
+
+model CourseCategories {
+  id        Int      @id @default(autoincrement())
+  name_en   String
+  name_am   String
+  name_ru   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  courses Course[]
+}
+
+model Course {
+  id                  Int      @id @default(autoincrement())
+  title_en            String
+  title_am            String
+  title_ru            String
+  description_en      String
+  description_am      String
+  description_ru      String
+  shortDescription_en String
+  shortDescription_am String
+  shortDescription_ru String
+  imageUrl            String
+  courseType          String
+  courseLevel         String
+  status              String
+  categoryId          Int
+  creatorId           Int      @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  price    CoursePrices[]
+  teachers CourseTeachers[]
+  groups   Groups[]
+
+  category CourseCategories @relation(fields: [categoryId], references: [id])
+  creator  User             @relation(fields: [creatorId], references: [id], onDelete: SetDefault)
+}
+
+model CoursePrices {
+  id        Int      @id @default(autoincrement())
+  courseId  Int
+  price     Float
+  discount  Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model CourseTeachers {
+  id        Int      @id @default(autoincrement())
+  courseId  Int
+  teacherId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  course  Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  teacher User   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+}
+
+model Groups {
+  id        Int      @id @default(autoincrement())
+  courseId  Int
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -7,6 +7,6 @@ export default defineConfig({
   },
   engine: "classic",
   datasource: {
-    url: env("DATABASE_URL"),
+    url: "postgresql://postgres:mt@localhost:5433/TesvanPlatformV2?schema=public",
   },
 });

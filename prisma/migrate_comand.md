@@ -10,8 +10,4 @@ npx prisma migrate reset
 -- seed --
 npm run seed
 
--- view db --
-npx prisma studio
-
-
 
