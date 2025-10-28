@@ -5,7 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -14,22 +15,26 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  firstName String
-  lastName  String?
-  imageUrl  String?
-  phone     String?
-  password  String
-  status    Boolean  @default(false)
-  role      Role     @default(STUDENT)
-  creatorId Int?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  firstName   String
+  lastName    String?
+  imageUrl    String?
+  phone       String?
+  password    String
+  gender      String
+  dateOfBirth DateTime
+  status      Boolean  @default(false)
+  role        Role     @default(STUDENT)
+  creatorId   Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   createdCourses Course[]
   taughtCourses  CourseTeachers[]
   groups         Groups[]
+
+  userSession UserSession?
 }
 
 enum Role {
@@ -37,6 +42,17 @@ enum Role {
   TEACHER
   ADMIN
   SUPERADMIN
+}
+
+model UserSession {
+  userId         Int       @unique
+  failedAttempts Int?      @default(0)
+  lastFailedAt   DateTime?
+  lockUntil      DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId])
 }
 
 model CourseCategories {
@@ -107,6 +123,6 @@ model Groups {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id])
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
