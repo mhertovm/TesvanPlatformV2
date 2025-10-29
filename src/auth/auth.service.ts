@@ -11,6 +11,7 @@ import { EmailSenderService } from 'src/email-sender/email-sender.service';
 import { signUpStep1Dto } from './dto/signUpStep1.dto';
 import { signUpStep2Dto } from './dto/signUpStep2.dto';
 import { signUpStep3Dto } from './dto/signUpStep3.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +19,8 @@ export class AuthService {
         private readonly userService: UserService,
         private readonly jwtService: JwtService,
         private readonly db: PrismaService,
-        private readonly emailSender: EmailSenderService
+        private readonly emailSender: EmailSenderService,
+        private readonly configService: ConfigService,
     ) { }
 
     private otpSendMaxCount: number = 3
@@ -301,14 +303,16 @@ export class AuthService {
     }
 
     private generateTokens(payload: { sub: number, role: string }): { accessToken: string; refreshToken: string } {
-        const JWT_SECRET = process.env.JWT_SECRET ?? 'default-secret-key';
+        const JWT_SECRET = this.configService.get('JWT_SECRET') ?? 'default-secret-key';
+        const JWT_REFRESH_SECRET = this.configService.get('JWT_REFRESH_SECRET') ?? 'default-refresh-secret-key';
+        
         const accessToken = this.jwtService.sign(payload, {
             secret: JWT_SECRET,
         });
 
         const refreshToken = this.jwtService.sign(payload, {
-            secret: JWT_SECRET,
-            expiresIn: '365d',
+            secret: JWT_REFRESH_SECRET,
+            expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN') || '7d',
         });
 
         return { accessToken, refreshToken };
