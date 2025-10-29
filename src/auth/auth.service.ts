@@ -86,7 +86,7 @@ export class AuthService {
         if (!user) throw new NotFoundException('User not found');
 
         const otpCode = Math.floor(10000 + Math.random() * 90000);
-        this.emailSender.sendForgotPasswordEmail(email, otpCode);
+        await this.emailSender.sendForgotPasswordEmail(email, otpCode);
 
         const existingPending = await this.db.pendingRepo.findUnique({
             where: { email },
@@ -202,7 +202,7 @@ export class AuthService {
         const hashedPassword = await bcrypt.hash(signUpStep2Dto.password, 12);
         const otpCode = Math.floor(10000 + Math.random() * 90000);
 
-        this.emailSender.sendSignUpEmail(pending.email, otpCode);
+        await this.emailSender.sendSignUpEmail(pending.email, otpCode);
 
         const updatedPending = await this.db.pendingRepo.update({
             where: { email: signUpStep2Dto.email },
@@ -303,29 +303,28 @@ export class AuthService {
     }
 
     private generateTokens(payload: { sub: number, role: string }): { accessToken: string; refreshToken: string } {
-        const JWT_SECRET = this.configService.get('JWT_SECRET') ?? 'default-secret-key';
-        const JWT_REFRESH_SECRET = this.configService.get('JWT_REFRESH_SECRET') ?? 'default-refresh-secret-key';
-        
-        const accessToken = this.jwtService.sign(payload, {
-            secret: JWT_SECRET,
-        });
+        const JWT_SECRET = this.configService.get<string>('JWT_SECRET');
+        const JWT_REFRESH_SECRET = this.configService.get<string>('JWT_REFRESH_SECRET') ?? JWT_SECRET;
+        const REFRESH_EXPIRES_IN = this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') ?? '7d';
+
+        const accessToken = this.jwtService.sign(payload, { secret: JWT_SECRET });
 
         const refreshToken = this.jwtService.sign(payload, {
             secret: JWT_REFRESH_SECRET,
-            expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN') || '7d',
-        });
+            expiresIn: REFRESH_EXPIRES_IN,
+        } as any);
 
         return { accessToken, refreshToken };
     }
 
     private async verifyCaptcha(token: string): Promise<boolean> {
         if (!token) return false;
-
-        const secret = process.env.RECAPTCHA_SECRET_KEY || '6Lf_C3srAAAAAJnMkLh2v7M1mP8PTslu2uDYy2JR';
+        const recaptchaSecretKey = this.configService.get<string>('RECAPTCHA_SECRET_KEY');
+        if (!recaptchaSecretKey) return false;
         const res = await fetch(`https://www.google.com/recaptcha/api/siteverify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `secret=${secret}&response=${token}`,
+            body: `secret=${recaptchaSecretKey}&response=${token}`,
         });
 
         const json = await res.json();

@@ -8,7 +8,7 @@ import { UserModule } from './user/user.module';
 import { EmailSenderModule } from './email-sender/email-sender.module';
 
 @Module({
-  imports: [ConfigModule, PrismaModule, AuthModule, UserModule, EmailSenderModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule, UserModule, EmailSenderModule],
   controllers: [AppController],
   providers: [AppService],
 })
