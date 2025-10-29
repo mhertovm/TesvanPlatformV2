@@ -3,19 +3,32 @@ import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { signInDto } from './dto/signIn.dto';
+import { forgotPasswordStep1Dto } from './dto/forgotPasswordStep1.dto';
+import { forgotPasswordStep2Dto } from './dto/forgotPasswordStep2.dto';
+import { forgotPasswordStep3Dto } from './dto/forgotPasswordStep3.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { EmailSenderService } from 'src/email-sender/email-sender.service';
+import { signUpStep1Dto } from './dto/signUpStep1.dto';
+import { signUpStep2Dto } from './dto/signUpStep2.dto';
+import { signUpStep3Dto } from './dto/signUpStep3.dto';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly userService: UserService,
         private readonly jwtService: JwtService,
+        private readonly db: PrismaService,
+        private readonly emailSender: EmailSenderService
     ) { }
+
+    private otpSendMaxCount: number = 3
+
     async signIn(signInDto: signInDto) {
-        signInDto.eOrUn = signInDto.eOrUn.toLowerCase();
-        const user = await this.userService.findByEmail(signInDto.eOrUn);
+        signInDto.email = signInDto.email.toLowerCase();
+        const user = await this.userService.findByEmail(signInDto.email);
 
         if (!user) {
-            throw new UnauthorizedException('Invalid username/email or password');
+            throw new UnauthorizedException('Invalid email or password');
         };
 
         if (user.userSession && user.userSession.lockUntil && new Date() < user.userSession.lockUntil) {
@@ -44,7 +57,7 @@ export class AuthService {
                 }
             })
 
-            throw new UnauthorizedException('Invalid username/email or password');
+            throw new UnauthorizedException('Invalid email or password');
         };
 
         await this.userService.updateUser({
@@ -63,6 +76,228 @@ export class AuthService {
         const { accessToken, refreshToken } = this.generateTokens(payload);
 
         return { user: userWithoutPassword, accessToken, refreshToken };
+    }
+
+    async forgotPasswordStep1({ email }: forgotPasswordStep1Dto) {
+        email = email.toLowerCase();
+        const user = await this.userService.findByEmail(email);
+        if (!user) throw new NotFoundException('User not found');
+
+        const otpCode = Math.floor(10000 + Math.random() * 90000);
+        this.emailSender.sendForgotPasswordEmail(email, otpCode);
+
+        const existingPending = await this.db.pendingRepo.findUnique({
+            where: { email },
+        });
+
+        if (existingPending) {
+            await this.db.pendingRepo.update({
+                where: { email },
+                data: { otpCode, otpSendMax: this.otpSendMaxCount },
+            });
+        } else {
+            await this.db.pendingRepo.create({
+                data: { email, otpCode, otpSendMax: this.otpSendMaxCount },
+            });
+        }
+
+        return { email };
+    }
+
+    async forgotPasswordStep2({ email, otpCode }: forgotPasswordStep2Dto) {
+        email = email.toLowerCase();
+        const pending = await this.db.pendingRepo.findUnique({ where: { email } });
+        if (!pending) throw new NotFoundException('Pending registration not found');
+
+        if (pending.otpCheckMax <= 0) {
+            throw new BadRequestException('Verification code sending limit has been exceeded.');
+        } else if (!pending.otpCode || pending.otpCode !== otpCode) {
+            const otpCheckMaxCount = pending.otpCheckMax - 1;
+            await this.db.pendingRepo.update({
+                where: { email },
+                data: { otpCheckMax: otpCheckMaxCount },
+            });
+            throw new UnauthorizedException('Invalid verification code.');
+        }
+
+        return { otpCode: pending.otpCode, email: pending.email };
+    }
+
+    async forgotPasswordStep3({ email, otpCode, password: newPassword }: forgotPasswordStep3Dto) {
+        email = email.toLowerCase();
+        const pending = await this.db.pendingRepo.findUnique({ where: { email } });
+        if (!pending) throw new NotFoundException('Pending registration not found');
+
+        if (pending.otpCheckMax <= 0) {
+            throw new BadRequestException('Verification code sending limit has been exceeded.');
+        } else if (!pending.otpCode || pending.otpCode !== otpCode) {
+            const otpCheckMaxCount = pending.otpCheckMax - 1;
+            await this.db.pendingRepo.update({
+                where: { email: pending.email },
+                data: { otpCheckMax: otpCheckMaxCount },
+            });
+            throw new UnauthorizedException('Invalid verification code.');
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+        const user = await this.userService.updateUser({
+            email,
+            data: {
+                userData: {
+                    password: hashedPassword,
+                }
+            }
+        })
+
+        if (!user) {
+            throw new BadRequestException('Failed to update password');
+        }
+        await this.db.pendingRepo.delete({ where: { email } });
+
+        const payload = { sub: user.id, role: user.role };
+        const { accessToken, refreshToken } = this.generateTokens(payload);
+
+        return { accessToken, refreshToken };
+    }
+
+    async signUpStep1(signUpStep1Dto: signUpStep1Dto) {
+        signUpStep1Dto.email = signUpStep1Dto.email.toLowerCase()
+
+        const user = await this.userService.findByEmail(signUpStep1Dto.email);
+
+        if (user) {
+            throw new UnauthorizedException('User with this email already exists.');
+        };
+
+        const existing = await this.db.pendingRepo.findFirst({
+            where: {
+                email: signUpStep1Dto.email,
+            },
+        });
+
+        const pending = existing
+            ? existing
+            : await this.db.pendingRepo.create({
+                data: signUpStep1Dto,
+            });
+
+        const { email, lastName, firstName } = pending;
+        return { email, lastName, firstName };
+    }
+
+    async signUpStep2(signUpStep2Dto: signUpStep2Dto) {
+        signUpStep2Dto.email = signUpStep2Dto.email.toLowerCase();
+
+        const pending = await this.db.pendingRepo.findUnique({ where: { email: signUpStep2Dto.email } });
+        if (!pending) throw new NotFoundException('Registration not found');
+
+        const existingUser = await this.userService.findByEmail(signUpStep2Dto.email);
+        if (existingUser) {
+            throw new UnauthorizedException('User with this email already exists');
+        }
+
+        const hashedPassword = await bcrypt.hash(signUpStep2Dto.password, 12);
+        const otpCode = Math.floor(10000 + Math.random() * 90000);
+
+        this.emailSender.sendSignUpEmail(pending.email, otpCode);
+
+        const updatedPending = await this.db.pendingRepo.update({
+            where: { email: signUpStep2Dto.email },
+            data: {
+                ...signUpStep2Dto,
+                password: hashedPassword,
+                otpCode,
+                otpSendMax: this.otpSendMaxCount
+            },
+        });
+
+        const { email } = updatedPending;
+
+        return { email };
+    }
+
+    async signUpStep3({ otpCode, email }: signUpStep3Dto) {
+        email = email.toLowerCase()
+        const pending = await this.db.pendingRepo.findUnique({ where: { email } });
+        if (!pending) throw new NotFoundException('Registration not found');
+
+        if (pending.otpCheckMax <= 0) {
+            throw new BadRequestException('Verification code sending limit has been exceeded.');
+        } else if (!pending.otpCode || pending.otpCode !== otpCode) {
+            const otpCheckMaxCount = pending.otpCheckMax - 1;
+            await this.db.pendingRepo.update({
+                where: { email },
+                data: { otpCheckMax: otpCheckMaxCount },
+            });
+            throw new UnauthorizedException('Invalid verification code.');
+        }
+
+        const user = await this.userService.createUser({
+            email: pending.email!,
+            firstName: pending.firstName!,
+            lastName: pending.lastName!,
+            password: pending.password!,
+            dateOfBirth: pending.dateOfBirth!,
+            gender: pending.gender!
+        });
+
+        await this.db.pendingRepo.delete({ where: { email } });
+
+        const { password, email: _, phone, role, dateOfBirth, ...userWithoutPassword } = user;
+        const payload = { sub: user.id, role: user.role };
+        const { accessToken, refreshToken } = this.generateTokens(payload);
+
+        return { user: userWithoutPassword, accessToken, refreshToken };
+    }
+
+    async sendOtp(email: string) {
+        email = email.toLowerCase();
+        const pending = await this.db.pendingRepo.findFirst({
+            where: { email },
+        });
+
+        if (!pending) {
+            throw new NotFoundException('Pending record not found. Please try again later.');
+        }
+
+        if (pending.otpSendMax <= 0) {
+            throw new BadRequestException('Verification code sending limit exceeded.');
+        }
+
+        const timeDiff = Date.now() - new Date(pending.updatedAt).getTime();
+        if (timeDiff < 30_000) {
+            const secondsLeft = Math.ceil((30_000 - timeDiff) / 1000);
+            throw new BadRequestException(`Please wait ${secondsLeft} seconds before sending a new verification code.`);
+        }
+
+        const otpCode = Math.floor(10000 + Math.random() * 90000);
+        await this.emailSender.sendSignUpEmail(pending.email, otpCode);
+
+        const otpSendMaxCount = pending.otpSendMax - 1;
+
+        const updatedPending = await this.db.pendingRepo.update({
+            where: { email },
+            data: {
+                otpCode,
+                otpSendMax: otpSendMaxCount,
+            },
+        });
+
+        if (updatedPending) return { message: 'Verification code send', limit: otpSendMaxCount };
+        else throw new NotFoundException('Pending record not found. Please try again later.');
+    }
+
+    async signUpExists(email: string) {
+        email = email.toLowerCase();
+        const pendingUser = await this.db.pendingRepo.findUnique({ where: { email } });
+        if (!pendingUser) throw new NotFoundException('Registration not found');
+        const { firstName, lastName, email: resEmail, dateOfBirth } = pendingUser;
+        return { firstName, lastName, dateOfBirth, email: resEmail };
+    }
+
+    refreshToken(payload: { sub: number, role: string }) {
+        return this.generateTokens(payload);
     }
 
     private generateTokens(payload: { sub: number, role: string }): { accessToken: string; refreshToken: string } {

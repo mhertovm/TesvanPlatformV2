@@ -3,7 +3,6 @@
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../node_modules/.prisma/client"
@@ -12,6 +11,22 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = "postgresql://postgres:mt@localhost:5433/TesvanPlatformV2?schema=public"
+}
+
+model pendingRepo {
+  id          Int       @id @default(autoincrement())
+  firstName   String?
+  lastName    String?
+  gender      String?
+  dateOfBirth DateTime?
+  email       String    @unique
+  password    String?
+  otpCode     Int?
+  otpSendMax  Int       @default(3)
+  otpCheckMax Int       @default(3)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model User {
