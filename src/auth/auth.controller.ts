@@ -1,4 +1,4 @@
-import { Controller, HttpCode, Post, Body, HttpStatus } from '@nestjs/common';
+import { Controller, HttpCode, Post, Body, HttpStatus, Get, Query } from '@nestjs/common';
 import { signInDto } from './dto/signIn.dto';
 import { forgotPasswordStep1Dto } from './dto/forgotPasswordStep1.dto';
 import { forgotPasswordStep2Dto } from './dto/forgotPasswordStep2.dto';
@@ -37,6 +37,12 @@ export class AuthController {
         return this.authService.forgotPasswordStep3(forgotPasswordStep3Dto);
     }
 
+    @HttpCode(HttpStatus.OK)
+    @Get('signUpExists')
+    signUpExists(@Query() { email }: { email: string }) {
+        return this.authService.signUpExists(email);
+    }
+    
     @HttpCode(HttpStatus.OK)
     @Post('signUp1')
     signUp1(@Body() signUpStep1Dto: signUpStep1Dto) {

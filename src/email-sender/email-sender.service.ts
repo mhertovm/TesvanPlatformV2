@@ -25,7 +25,7 @@ export class EmailSenderService {
         });
     }
 
-    private async sendEmail(to: string, subject: string, text: string, html?: string) {
+    async sendEmail(to: string, subject: string, text: string, html?: string) {
         const from = this.configService.get('EMAIL_FROM');
         try {
             const info = await this.transporter.sendMail({

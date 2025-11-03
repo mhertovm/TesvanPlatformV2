@@ -255,6 +255,36 @@ export class AuthService {
         return { user: userWithoutPassword, accessToken, refreshToken };
     }
 
+    async changePassword(email: string, currentPassword: string, newPassword: string) {
+        email = email.toLowerCase();
+        const user = await this.userService.findByEmail(email);
+        if (!user) throw new NotFoundException('User not found');
+
+        const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        if (!isPasswordValid) {
+            throw new UnauthorizedException('Current password is incorrect');
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+        const updatedUser = await this.userService.updateUser({
+            email,
+            data: {
+                userData: {
+                    password: hashedPassword,
+                }
+            }
+        });
+
+        if (!updatedUser) {
+            throw new BadRequestException('Failed to update password');
+        };
+
+        this.emailSender.sendEmail(updatedUser.email, 'Password Changed Successfully', 'Your password has been changed successfully.' + new Date().toLocaleString());
+
+        return { message: 'Password changed successfully' };
+    }
+
     async sendOtp(email: string) {
         email = email.toLowerCase();
         const pending = await this.db.pendingRepo.findFirst({
