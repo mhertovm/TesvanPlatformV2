@@ -39,6 +39,7 @@ export class AuthService {
         };
 
         if ((user.userSession?.failedAttempts ?? 0) >= 3) {
+            if (!signInDto.captchaToken) throw new BadRequestException('CAPTCHA token is required');
             const isValidCaptcha = await this.verifyCaptcha(signInDto.captchaToken);
             if (!isValidCaptcha) throw new BadRequestException('Invalid CAPTCHA');
         }
@@ -241,7 +242,8 @@ export class AuthService {
             lastName: pending.lastName!,
             password: pending.password!,
             dateOfBirth: pending.dateOfBirth!,
-            gender: pending.gender!
+            gender: pending.gender!,
+            status: true
         });
 
         await this.db.pendingRepo.delete({ where: { email } });
@@ -264,7 +266,7 @@ export class AuthService {
         }
 
         if (pending.otpSendMax <= 0) {
-            throw new BadRequestException('Verification code sending limit exceeded.');
+            throw new BadRequestException('Verification code sending limit exceeded. Please restart the registration process.');
         }
 
         const timeDiff = Date.now() - new Date(pending.updatedAt).getTime();
