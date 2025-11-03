@@ -73,4 +73,10 @@ export class UserService {
         });
     }
 
+    async deleteUser({ email }: { email: string }) {
+        return this.db.user.delete({
+            where: { email },
+        });
+    }
+
 }

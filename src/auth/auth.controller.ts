@@ -8,6 +8,8 @@ import { signUpStep1Dto } from './dto/signUpStep1.dto';
 import { signUpStep2Dto } from './dto/signUpStep2.dto';
 import { signUpStep3Dto } from './dto/signUpStep3.dto';
 import { sendOTPDto } from './dto/sendOTP.dto';
+import { ChangePasswordDto } from './dto/changePassword.dto';
+import { deleteAccountDto } from './dto/deleteAccount.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -42,7 +44,7 @@ export class AuthController {
     signUpExists(@Query() { email }: { email: string }) {
         return this.authService.signUpExists(email);
     }
-    
+
     @HttpCode(HttpStatus.OK)
     @Post('signUp1')
     signUp1(@Body() signUpStep1Dto: signUpStep1Dto) {
@@ -65,5 +67,17 @@ export class AuthController {
     @Post('sendOtp')
     sendOtp(@Body() sendOTPDto: sendOTPDto) {
         return this.authService.sendOtp(sendOTPDto.email);
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @Post('changePassword')
+    changePassword(@Body() changePasswordDto: ChangePasswordDto) {
+        return this.authService.changePassword(changePasswordDto);
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @Post('deleteAccount')
+    deleteAccountDto(@Body() deleteAccountDto: deleteAccountDto) {
+        return this.authService.deleteAccount(deleteAccountDto);
     }
 }

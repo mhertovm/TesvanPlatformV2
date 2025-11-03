@@ -24,6 +24,30 @@ export class signUpStep2Dto {
     @IsString()
     lastName: string
 
+    @ApiProperty()
+    @IsString()
+    phone: string
+
+    @ApiProperty()
+    @IsString()
+    country: string
+
+    @ApiProperty()
+    @IsString()
+    city: string
+
+    @ApiProperty()
+    @IsString()
+    englishLevel: string
+
+    @ApiProperty()
+    @IsString()
+    QABackground: boolean
+
+    @ApiProperty()
+    @IsString()
+    education: string
+
     @ApiProperty({ enum: ['Male', 'Female', 'Other'], example: 'Male' })
     @IsNotEmpty({ message: 'Gender is required' })
     @IsString({ message: 'Gender must be a string' })

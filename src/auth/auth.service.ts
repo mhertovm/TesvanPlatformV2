@@ -12,6 +12,8 @@ import { signUpStep1Dto } from './dto/signUpStep1.dto';
 import { signUpStep2Dto } from './dto/signUpStep2.dto';
 import { signUpStep3Dto } from './dto/signUpStep3.dto';
 import { ConfigService } from '@nestjs/config';
+import { ChangePasswordDto } from './dto/changePassword.dto';
+import { deleteAccountDto } from './dto/deleteAccount.dto';
 
 @Injectable()
 export class AuthService {
@@ -240,6 +242,12 @@ export class AuthService {
             email: pending.email!,
             firstName: pending.firstName!,
             lastName: pending.lastName!,
+            phone: pending.phone ?? undefined,
+            country: pending.country ?? undefined,
+            city: pending.city ?? undefined,
+            englishLevel: pending.englishLevel ?? undefined,
+            QABackground: pending.QABackground ?? undefined,
+            education: pending.education ?? undefined,
             password: pending.password!,
             dateOfBirth: pending.dateOfBirth!,
             gender: pending.gender!,
@@ -255,7 +263,7 @@ export class AuthService {
         return { user: userWithoutPassword, accessToken, refreshToken };
     }
 
-    async changePassword(email: string, currentPassword: string, newPassword: string) {
+    async changePassword({ email, currentPassword, newPassword }: ChangePasswordDto) {
         email = email.toLowerCase();
         const user = await this.userService.findByEmail(email);
         if (!user) throw new NotFoundException('User not found');
@@ -283,6 +291,19 @@ export class AuthService {
         this.emailSender.sendEmail(updatedUser.email, 'Password Changed Successfully', 'Your password has been changed successfully.' + new Date().toLocaleString());
 
         return { message: 'Password changed successfully' };
+    }
+
+    async deleteAccount({ email, password }: deleteAccountDto) {
+        email = email.toLowerCase();
+        const user = await this.userService.findByEmail(email);
+        if (!user) throw new NotFoundException('User not found');
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            throw new UnauthorizedException('Password is incorrect');
+        }
+
+        await this.userService.deleteUser({ email });
     }
 
     async sendOtp(email: string) {
