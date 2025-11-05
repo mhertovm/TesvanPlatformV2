@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateCourseMetaDto } from './dto/create-course-meta.dto';
 
 @Injectable()
 export class CourseService {
@@ -11,6 +12,12 @@ export class CourseService {
         });
     }
 
+    createMetaToCourse(data: CreateCourseMetaDto) {
+        return this.db.courseMeta.create({
+            data,
+        });
+    }
+
     createPriceToCourse(courseId: number, price: number, discount: number) {
         return this.db.coursePrices.create({
             data: {
@@ -18,15 +25,6 @@ export class CourseService {
                 price,
                 discount
             },
-        });
-    }
-
-    addStudentLimitToCourse(courseId: number, studentLimit: number) {
-        return this.db.course.update({
-            where: { id: courseId },
-            data: {
-                studentLimit
-            }
         });
     }
 

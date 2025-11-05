@@ -1,5 +1,5 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { PrismaClient, Prisma, Role } from '@prisma/client';
+import { PrismaClient, Prisma, Role, CourseStatus } from '@prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
@@ -14,5 +14,5 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 export { Prisma as PrismaType };
 
 //export db enums
-export { Role };
+export { Role, CourseStatus }
 

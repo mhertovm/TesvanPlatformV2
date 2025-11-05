@@ -8,10 +8,7 @@ export class CreateCourseDto {
     shortDescription_en: string;
     shortDescription_am: string;
     shortDescription_ru: string;
-    imageUrl: string;
-    courseType: string;
-    courseLevel: string;
-    status: string;
+    imageUrl?: string;
     categoryId: number;
     creatorId: number;
 }

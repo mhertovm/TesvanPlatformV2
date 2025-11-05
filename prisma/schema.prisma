@@ -103,22 +103,37 @@ model Course {
   shortDescription_en String
   shortDescription_am String
   shortDescription_ru String
-  imageUrl            String
-  courseType          String
-  courseLevel         String
-  status              String
-  studentLimit        Int?
+  imageUrl            String?
   categoryId          Int
   creatorId           Int      @default(0)
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
+  meta     CourseMeta?
   price    CoursePrices[]
   teachers CourseTeachers[]
   students CourseStudents[]
 
   category CourseCategories @relation(fields: [categoryId], references: [id])
   creator  User             @relation(fields: [creatorId], references: [id], onDelete: SetDefault)
+}
+
+model CourseMeta {
+  id           Int           @id @default(autoincrement())
+  courseId     Int           @unique
+  courseType   String?
+  courseLevel  String?
+  status       CourseStatus? @default(DRAFT)
+  studentLimit Int?
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  INPROGRESS
+  ARCHIVED
 }
 
 model CoursePrices {
