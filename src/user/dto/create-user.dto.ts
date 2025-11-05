@@ -15,6 +15,6 @@ export class CreateUserDto {
     dateOfBirth: Date;
     gender: string;
     creatorId?: number;
-    status?: boolean;
+    isVerified?: boolean;
     role?: Role;
 }

@@ -251,7 +251,7 @@ export class AuthService {
             password: pending.password!,
             dateOfBirth: pending.dateOfBirth!,
             gender: pending.gender!,
-            status: true
+            isVerified: true
         });
 
         await this.db.pendingRepo.delete({ where: { email } });

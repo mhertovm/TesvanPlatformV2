@@ -6,9 +6,11 @@ import { ConfigModule } from '@nestjs/config'
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { EmailSenderModule } from './email-sender/email-sender.module';
+import { CourseModule } from './course/course.module';
+import { CourseCategoryModule } from './course-category/course-category.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule, UserModule, EmailSenderModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule, UserModule, EmailSenderModule, CourseModule, CourseCategoryModule],
   controllers: [AppController],
   providers: [AppService],
 })

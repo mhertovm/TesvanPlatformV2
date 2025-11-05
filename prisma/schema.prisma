@@ -50,15 +50,15 @@ model User {
   password     String
   gender       String
   dateOfBirth  DateTime
-  status       Boolean  @default(false)
+  isVerified   Boolean  @default(false)
   role         Role     @default(STUDENT)
   creatorId    Int?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  createdCourses Course[]
-  taughtCourses  CourseTeachers[]
-  groups         Groups[]
+  createdCourses  Course[]
+  taughtCourses   CourseTeachers[]
+  learningCourses CourseStudents[]
 
   userSession UserSession?
 }
@@ -107,6 +107,7 @@ model Course {
   courseType          String
   courseLevel         String
   status              String
+  studentLimit        Int?
   categoryId          Int
   creatorId           Int      @default(0)
   createdAt           DateTime @default(now())
@@ -114,7 +115,7 @@ model Course {
 
   price    CoursePrices[]
   teachers CourseTeachers[]
-  groups   Groups[]
+  students CourseStudents[]
 
   category CourseCategories @relation(fields: [categoryId], references: [id])
   creator  User             @relation(fields: [creatorId], references: [id], onDelete: SetDefault)
@@ -142,7 +143,7 @@ model CourseTeachers {
   teacher User   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 }
 
-model Groups {
+model CourseStudents {
   id        Int      @id @default(autoincrement())
   courseId  Int
   userId    Int
