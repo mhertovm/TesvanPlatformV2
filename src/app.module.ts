@@ -8,9 +8,10 @@ import { UserModule } from './user/user.module';
 import { EmailSenderModule } from './email-sender/email-sender.module';
 import { CourseModule } from './course/course.module';
 import { CourseCategoryModule } from './course-category/course-category.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule, UserModule, EmailSenderModule, CourseModule, CourseCategoryModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule, UserModule, EmailSenderModule, CourseModule, CourseCategoryModule, UploadModule],
   controllers: [AppController],
   providers: [AppService],
 })

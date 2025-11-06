@@ -1,4 +1,5 @@
 export class CreateCourseDto {
+    id?: number;
     title_en: string;
     title_am: string;
     title_ru: string;

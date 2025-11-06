@@ -18,7 +18,7 @@ type UserUpdateType =
 export class UserService {
     constructor(private readonly db: PrismaService) { }
 
-    async findByEmail(email: string) {
+    findByEmail(email: string) {
         return this.db.user.findFirst({
             where: {
                 email: email,
@@ -27,7 +27,7 @@ export class UserService {
         });
     }
 
-    async createUser(createUserDto: CreateUserDto) {
+    createUser(createUserDto: CreateUserDto) {
         return this.db.user.create({
             data: {
                 ...createUserDto,
@@ -42,7 +42,7 @@ export class UserService {
         });
     }
 
-    async updateUser({ userId, email, data }: UserUpdateType) {
+    updateUser({ userId, email, data }: UserUpdateType) {
         let whereClause: PrismaType.UserWhereUniqueInput | undefined;
 
         if (userId) {
@@ -73,7 +73,7 @@ export class UserService {
         });
     }
 
-    async deleteUser({ email }: { email: string }) {
+    deleteUser({ email }: { email: string }) {
         return this.db.user.delete({
             where: { email },
         });
