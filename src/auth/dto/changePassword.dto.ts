@@ -9,6 +9,7 @@ export class ChangePasswordDto {
 
     @ApiProperty()
     @IsNotEmpty({ message: 'current password is required' })
+    @IsString()
     currentPassword: string;
 
     @ApiProperty()

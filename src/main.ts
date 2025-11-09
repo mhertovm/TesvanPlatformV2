@@ -9,10 +9,26 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
   const config = new DocumentBuilder()
-    .setTitle('Cats example')
-    .setDescription('The cats API description')
-    .setVersion('1.0')
-    .addTag('cats')
+    .setTitle('Tesvan API')
+    .setDescription('Tesvan platform API description')
+    .setVersion('2.0')
+     .addServer('http://localhost:3000', 'local development server')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT', // Optional, just to clarify the token type
+      },
+      'access-token', // This name is used to reference the bearer token in Swagger
+    )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT', // Optional, just to clarify the token type
+      },
+      'refresh-token', // This name is used to reference the bearer token in Swagger
+    )
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);

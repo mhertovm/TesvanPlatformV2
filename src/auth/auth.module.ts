@@ -4,16 +4,14 @@ import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { EmailSenderModule } from 'src/email-sender/email-sender.module';
 import { UserModule } from 'src/user/user.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    JwtModule.registerAsync({
-      useFactory: (configService: ConfigService) => ({
-        global: true,
-        secret: 'default-secret-key',
-        signOptions: { expiresIn: '30m' },
-      }),
+    JwtModule.register({
+      global: true,
+      secret: 'your_jwt_secret',
+      signOptions: { expiresIn: '30m' },
     }),
     EmailSenderModule,
     UserModule,
@@ -21,6 +19,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   ],
   controllers: [AuthController],
   providers: [AuthService],
-  exports: [AuthService]
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule { }

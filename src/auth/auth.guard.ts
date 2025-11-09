@@ -1,6 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from './auth.jwtPayload.decorator';
+import { Request } from 'express';
+
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -12,27 +15,34 @@ export class AuthGuard implements CanActivate {
   async canActivate(
     context: ExecutionContext,
   ): Promise<boolean> {
-    const roles = this.reflector.get<string[]>('roles', context.getHandler());
-    const request = context.switchToHttp().getRequest();
+    const roles = this.reflector.getAllAndOverride<string[]>('roles', [
+      context.getHandler(), //get endpoint decorator
+      context.getClass(), //get controller decorator
+    ]);
+
+    const request = context.switchToHttp().getRequest() as Request;
     const token = this.extractTokenFromHeader(request);
     if (!token) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException("Do not token");
     };
+
     try {
       const payload = await this.jwtService.verifyAsync(
         token,
         {
-          secret: process.env.JWT_SECRET || 'default-secret-key'
+          secret: 'your_jwt_secret'
         }
-      );
-      if (!roles.includes(payload['role'])) {
+      )
+
+      if (!roles.includes(payload.role)) {
         throw new UnauthorizedException();
       };
+
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
-      request['user'] = { sub: payload.sub, username: payload.username, role: payload.role };
+      request['user'] = { sub: payload.sub, role: payload.role } as JwtPayload;
     } catch {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException("3");
     };
     return true;
   }

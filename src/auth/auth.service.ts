@@ -6,7 +6,7 @@ import { signInDto } from './dto/signIn.dto';
 import { forgotPasswordStep1Dto } from './dto/forgotPasswordStep1.dto';
 import { forgotPasswordStep2Dto } from './dto/forgotPasswordStep2.dto';
 import { forgotPasswordStep3Dto } from './dto/forgotPasswordStep3.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService, Role } from 'src/prisma/prisma.service';
 import { EmailSenderService } from 'src/email-sender/email-sender.service';
 import { signUpStep1Dto } from './dto/signUpStep1.dto';
 import { signUpStep2Dto } from './dto/signUpStep2.dto';
@@ -251,7 +251,8 @@ export class AuthService {
             password: pending.password!,
             dateOfBirth: pending.dateOfBirth!,
             gender: pending.gender!,
-            isVerified: true
+            isVerified: true,
+            role: Role.STUDENT
         });
 
         await this.db.pendingRepo.delete({ where: { email } });

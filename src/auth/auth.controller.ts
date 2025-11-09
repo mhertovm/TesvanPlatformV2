@@ -1,4 +1,4 @@
-import { Controller, HttpCode, Post, Body, HttpStatus, Get, Query } from '@nestjs/common';
+import { Controller, HttpCode, Post, Body, HttpStatus, Get, Query, Delete, Patch } from '@nestjs/common';
 import { signInDto } from './dto/signIn.dto';
 import { forgotPasswordStep1Dto } from './dto/forgotPasswordStep1.dto';
 import { forgotPasswordStep2Dto } from './dto/forgotPasswordStep2.dto';
@@ -10,6 +10,10 @@ import { signUpStep3Dto } from './dto/signUpStep3.dto';
 import { sendOTPDto } from './dto/sendOTP.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { deleteAccountDto } from './dto/deleteAccount.dto';
+import { AuthAndGuard } from './auth.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { User } from './auth.jwtPayload.decorator';
+import type { JwtPayload } from './auth.jwtPayload.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -19,24 +23,6 @@ export class AuthController {
     @Post('signin')
     async signIn(@Body() signInDto: signInDto) {
         return await this.authService.signIn(signInDto);
-    }
-
-    @HttpCode(HttpStatus.OK)
-    @Post('forgotPassword1')
-    async forgotPasswordStep1(@Body() forgotPasswordStep1Dto: forgotPasswordStep1Dto) {
-        return await this.authService.forgotPasswordStep1(forgotPasswordStep1Dto);
-    }
-
-    @HttpCode(HttpStatus.OK)
-    @Post('forgotPassword2')
-    async forgotPasswordStep2(@Body() forgotPasswordStep2Dto: forgotPasswordStep2Dto) {
-        return await this.authService.forgotPasswordStep2(forgotPasswordStep2Dto);
-    }
-
-    @HttpCode(HttpStatus.OK)
-    @Post('forgotPassword3')
-    async forgotPasswordStep3(@Body() forgotPasswordStep3Dto: forgotPasswordStep3Dto) {
-        return await this.authService.forgotPasswordStep3(forgotPasswordStep3Dto);
     }
 
     @HttpCode(HttpStatus.OK)
@@ -64,20 +50,46 @@ export class AuthController {
     }
 
     @HttpCode(HttpStatus.OK)
+    @Post('forgotPassword1')
+    async forgotPasswordStep1(@Body() forgotPasswordStep1Dto: forgotPasswordStep1Dto) {
+        return await this.authService.forgotPasswordStep1(forgotPasswordStep1Dto);
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @Post('forgotPassword2')
+    async forgotPasswordStep2(@Body() forgotPasswordStep2Dto: forgotPasswordStep2Dto) {
+        return await this.authService.forgotPasswordStep2(forgotPasswordStep2Dto);
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @Post('forgotPassword3')
+    async forgotPasswordStep3(@Body() forgotPasswordStep3Dto: forgotPasswordStep3Dto) {
+        return await this.authService.forgotPasswordStep3(forgotPasswordStep3Dto);
+    }
+
+    @HttpCode(HttpStatus.OK)
     @Post('sendOtp')
     async sendOtp(@Body() sendOTPDto: sendOTPDto) {
         return await this.authService.sendOtp(sendOTPDto.email);
     }
 
     @HttpCode(HttpStatus.OK)
-    @Post('changePassword')
+    @Patch('changePassword')
     async changePassword(@Body() changePasswordDto: ChangePasswordDto) {
         return await this.authService.changePassword(changePasswordDto);
     }
 
     @HttpCode(HttpStatus.OK)
-    @Post('deleteAccount')
+    @Delete('deleteAccount')
     async deleteAccount(@Body() deleteAccountDto: deleteAccountDto) {
         return await this.authService.deleteAccount(deleteAccountDto);
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth('refresh-token')
+    @AuthAndGuard(['ADMIN', 'STUDENT', 'TEACHER', 'SUPERADMIN'])
+    @Post('refreshToken')
+    refreshToken(@User() user: JwtPayload) {
+        return this.authService.refreshToken(user);
     }
 }
