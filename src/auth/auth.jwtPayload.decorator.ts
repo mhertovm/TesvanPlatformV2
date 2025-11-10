@@ -6,13 +6,6 @@ export type JwtPayload = {
     role: string;
 };
 
-// export const jwtPayload = (payload: JwtPayload) => {
-//     return (req: Request, res: Response, next: NextFunction) => {
-//         req.user = payload;
-//         next();
-//     };
-// };
-
 declare module 'express' {
     interface Request {
         user?: JwtPayload;

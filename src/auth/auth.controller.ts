@@ -1,4 +1,4 @@
-import { Controller, HttpCode, Post, Body, HttpStatus, Get, Query, Delete, Put } from '@nestjs/common';
+import { Controller, HttpCode, Post, Body, HttpStatus, Get, Query, Delete, Put, Req, UnauthorizedException } from '@nestjs/common';
 import { signInDto } from './dto/signIn.dto';
 import { forgotPasswordStep1Dto } from './dto/forgotPasswordStep1.dto';
 import { forgotPasswordStep2Dto } from './dto/forgotPasswordStep2.dto';
@@ -89,7 +89,12 @@ export class AuthController {
     @ApiBearerAuth('refresh-token')
     @AuthAndGuard(['ADMIN', 'STUDENT', 'TEACHER', 'SUPERADMIN'])
     @Post('refreshToken')
-    refreshToken(@User() user: JwtPayload) {
-        return this.authService.refreshToken(user);
+    refreshToken(@Req() req: Request) {
+        const authHeader = req.headers['authorization'];
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            throw new UnauthorizedException();
+        };
+        const refreshToken = authHeader.split(' ')[1];
+        return this.authService.refreshToken(refreshToken);
     }
 }

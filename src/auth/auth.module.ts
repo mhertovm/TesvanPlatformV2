@@ -10,8 +10,8 @@ import { ConfigModule } from '@nestjs/config';
   imports: [
     JwtModule.register({
       global: true,
-      secret: 'your_jwt_secret',
-      signOptions: { expiresIn: '30m' },
+      secret: process.env.JWT_SECRET || 'your_jwt_secret',
+      signOptions: { expiresIn: '5h' },
     }),
     EmailSenderModule,
     UserModule,
@@ -19,6 +19,6 @@ import { ConfigModule } from '@nestjs/config';
   ],
   controllers: [AuthController],
   providers: [AuthService],
-  exports: [AuthService, JwtModule],
+  exports: [AuthService],
 })
 export class AuthModule { }

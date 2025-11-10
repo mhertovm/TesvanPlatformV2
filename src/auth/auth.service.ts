@@ -352,13 +352,19 @@ export class AuthService {
         return { firstName, lastName, dateOfBirth, email: resEmail };
     }
 
-    refreshToken(payload: { sub: number, role: string }) {
+    async refreshToken(token: string) {
+        const JWT_REFRESH_SECRET = this.configService.get<string>('JWT_REFRESH_SECRET')
+        const payload = await this.jwtService.verifyAsync(
+            token,
+            { secret: JWT_REFRESH_SECRET }
+        );
+
         return this.generateTokens(payload);
     }
 
     private generateTokens(payload: { sub: number, role: string }): { accessToken: string; refreshToken: string } {
         const JWT_SECRET = this.configService.get<string>('JWT_SECRET');
-        const JWT_REFRESH_SECRET = this.configService.get<string>('JWT_REFRESH_SECRET') ?? JWT_SECRET;
+        const JWT_REFRESH_SECRET = this.configService.get<string>('JWT_REFRESH_SECRET');
         const REFRESH_EXPIRES_IN = this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') ?? '7d';
 
         const accessToken = this.jwtService.sign(payload, { secret: JWT_SECRET });
