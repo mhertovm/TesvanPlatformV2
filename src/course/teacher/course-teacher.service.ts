@@ -4,20 +4,54 @@ import { CreateCourseDto } from '../dto/create-course.dto';
 import { CourseUtils } from '../common/course.utils';
 import { UpsertCourseMetaDto } from '../dto/upsert-course-meta.dto';
 import { CreateCoursePriceDto } from '../dto/create-course-price.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class CourseTeacherService {
     constructor(
         private readonly courseService: CourseService,
         private readonly utils: CourseUtils,
+        private readonly db: PrismaService
     ) { }
 
     async createCourse(data: CreateCourseDto, creatorId: number) {
         return this.courseService.createCourse(data, creatorId);
     }
 
-    async findAllCoursesByCreator(creatorId: number) {
-        return this.courseService.findAllCoursesByCreator(creatorId);
+    async findAllCourses(teacherId: number, type: string, take: number, skip: number) {
+        if (type === "creator") {
+            const teacherCourses = await this.courseService.findAllCoursesByCreator(teacherId, take, skip);
+            return teacherCourses.map(course => {
+                const { meta, price, teachers, students, ...rest } = course;
+                return rest;
+            });
+        };
+
+        const teacherCourses = await this.db.course.findMany({
+            where: {
+                teachers: {
+                    some: {
+                        teacherId,
+                    }
+                },
+            },
+            take,
+            skip,
+            orderBy: { createdAt: 'desc' },
+            include: {
+                category: true,
+                creator: {
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                        imageUrl: true,
+                    },
+                },
+            },
+        });
+
+        return teacherCourses
+
     }
 
     async updateCourse(id: number, data: CreateCourseDto, creatorId: number) {

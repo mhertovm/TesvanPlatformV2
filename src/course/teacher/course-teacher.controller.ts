@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UploadedFile } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UploadedFile } from '@nestjs/common';
 import { CourseTeacherService } from './course-teacher.service';
 import { CreateCourseDto } from '../dto/create-course.dto';
 import { AuthAndGuard } from 'src/auth/auth.decorator';
@@ -27,11 +27,14 @@ export class CourseTeacherController {
     }
 
     @Get()
-    async findAllCoursesByCreator(
+    async findAllCourses(
+        @Query('type') type: 'all' | 'creator' = 'all',
+        @Query('take') take: number = 10,
+        @Query('skip') skip: number = 0,
         @User() user: JwtPayload
     ) {
-        const { sub: creatorId } = user;
-        return await this.courseTeacherService.findAllCoursesByCreator(creatorId);
+        const { sub: teacherId } = user;
+        return await this.courseTeacherService.findAllCourses(teacherId, type, take, skip);
     }
 
     @Put(':id')

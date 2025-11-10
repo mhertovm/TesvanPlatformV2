@@ -120,13 +120,22 @@ export class CourseService {
         });
     }
 
-    findAllCoursesByCreator(creatorId: number) {
+    findAllCoursesByCreator(creatorId: number, take: number, skip: number) {
         return this.db.course.findMany({
+            take,
+            skip,
+            orderBy: { createdAt: 'desc' },
             where: { creatorId },
             include: {
                 meta: true,
                 category: true,
-                creator: true,
+                creator: {
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                        imageUrl: true
+                    }
+                },
                 price: true,
                 teachers: true,
                 students: true
@@ -139,7 +148,13 @@ export class CourseService {
             include: {
                 meta: true,
                 category: true,
-                creator: true,
+                creator: {
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                        imageUrl: true
+                    }
+                },
                 price: true,
                 teachers: true,
                 students: true
@@ -153,7 +168,13 @@ export class CourseService {
             include: {
                 meta: true,
                 category: true,
-                creator: true,
+                creator: {
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                        imageUrl: true
+                    }
+                },
                 price: true,
                 teachers: true,
                 students: true
