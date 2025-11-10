@@ -73,12 +73,13 @@ export class CourseService {
         });
     }
 
-    addTeacherToCourse(courseId: number, teacherId: number) {
+    addTeacherToCourse(courseId: number, teacherIds: number[]) {
+        teacherIds = Array.isArray(teacherIds) ? teacherIds : [teacherIds]
         return this.db.course.update({
             where: { id: courseId },
             data: {
                 teachers: {
-                    connect: { id: teacherId },
+                    connect: teacherIds.map(id => ({ id })),
                 },
             },
         });
@@ -95,12 +96,14 @@ export class CourseService {
         });
     }
 
-    addStudentToCourse(courseId: number, studentId: number) {
+    addStudentToCourse(courseId: number, studentIds: number[]) {
+        studentIds = Array.isArray(studentIds) ? studentIds : [studentIds]
+
         return this.db.course.update({
             where: { id: courseId },
             data: {
                 students: {
-                    connect: { id: studentId },
+                    connect: studentIds.map(id => ({ id })),
                 },
             },
         });

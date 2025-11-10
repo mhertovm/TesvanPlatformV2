@@ -5,5 +5,5 @@ export class AddTeacherCourseDto {
     @ApiProperty()
     @IsNotEmpty({ message: 'teacherId is required' })
     @IsNumber()
-    teacherId: number
+    teacherIds: number[]
 }

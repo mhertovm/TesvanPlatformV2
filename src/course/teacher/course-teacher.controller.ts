@@ -11,8 +11,6 @@ import { UpsertCourseImageDto } from '../dto/upsert-course-image.dto';
 import { AddTeacherCourseDto } from '../dto/add-teacher-course.dto';
 import { DeleteCoursePriceDto } from '../dto/delete-course-price.dto';
 import { DeleteTeacherCourseDto } from '../dto/delete-teacher-course.dto';
-import { AddStudentCourseDto } from '../dto/add-student-course.dto';
-import { DeleteStudentCourseDto } from '../dto/delete-student-course.dto';
 
 @AuthAndGuard(['TEACHER'])
 @Controller('course/teacher')
@@ -128,11 +126,11 @@ export class CourseTeacherController {
     @Post('addTeacherToCourse/:courseId')
     async addTeacherToCourse(
         @Param("courseId") courseId: number,
-        @Body() { teacherId }: AddTeacherCourseDto,
+        @Body() { teacherIds }: AddTeacherCourseDto,
         @User() user: JwtPayload
     ) {
         const { sub: creatorId } = user;
-        return await this.courseTeacherService.addTeacherToCourse(courseId, teacherId, creatorId);
+        return await this.courseTeacherService.addTeacherToCourse(courseId, teacherIds, creatorId);
     }
 
     @Get('courseTeachers/:courseId')
@@ -154,16 +152,6 @@ export class CourseTeacherController {
         return await this.courseTeacherService.removeTeacherFromCourse(courseId, teacherId, creatorId);
     }
 
-    @Post('addStudentToCourse/:courseId')
-    async addStudentToCourse(
-        @Param("courseId") courseId: number,
-        @Body() { studentId }: AddStudentCourseDto,
-        @User() user: JwtPayload
-    ) {
-        const { sub: creatorId } = user;
-        return await this.courseTeacherService.addStudentToCourse(courseId, studentId, creatorId);
-    }
-
     @Get('courseStudents/:courseId')
     async getCourseStudents(
         @Param("courseId") courseId: number,
@@ -171,15 +159,5 @@ export class CourseTeacherController {
     ) {
         const { sub: memberId } = user;
         return await this.courseTeacherService.getCourseStudent(courseId, memberId)
-    }
-
-    @Delete('removeStudentFromCourse/:courseId')
-    async removeStudentFromCourse(
-        @Param("courseId") courseId: number,
-        @Body() { studentId }: DeleteStudentCourseDto,
-        @User() user: JwtPayload
-    ) {
-        const { sub: creatorId } = user;
-        return await this.courseTeacherService.removeStudentFromCourse(courseId, studentId, creatorId);
     }
 }
