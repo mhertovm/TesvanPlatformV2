@@ -13,4 +13,28 @@ export class CourseUtils {
             }
         });
     }
+
+    checkCourseMembershipAndGet(courseId: number, memberId: number) {
+        const course = this.prisma.course.findUnique({
+            where: {
+                id: courseId,
+            },
+            select: {
+                imageUrl: true,
+                meta: true,
+                price: true,
+                students: true,
+                teachers: {
+                    where: { id: memberId },
+                    select: { id: true },
+                }
+            }
+        });
+
+        if (!course || course.teachers.length === 0) {
+            return null;
+        }
+
+        return course;
+    }
 }

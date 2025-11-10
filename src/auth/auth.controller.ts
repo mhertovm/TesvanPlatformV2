@@ -1,4 +1,4 @@
-import { Controller, HttpCode, Post, Body, HttpStatus, Get, Query, Delete, Patch } from '@nestjs/common';
+import { Controller, HttpCode, Post, Body, HttpStatus, Get, Query, Delete, Put } from '@nestjs/common';
 import { signInDto } from './dto/signIn.dto';
 import { forgotPasswordStep1Dto } from './dto/forgotPasswordStep1.dto';
 import { forgotPasswordStep2Dto } from './dto/forgotPasswordStep2.dto';
@@ -74,7 +74,7 @@ export class AuthController {
     }
 
     @HttpCode(HttpStatus.OK)
-    @Patch('changePassword')
+    @Put('changePassword')
     async changePassword(@Body() changePasswordDto: ChangePasswordDto) {
         return await this.authService.changePassword(changePasswordDto);
     }

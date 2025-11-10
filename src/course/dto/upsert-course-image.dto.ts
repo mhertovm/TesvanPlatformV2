@@ -2,11 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber } from 'class-validator';
 
 export class UpsertCourseImageDto {
-    @ApiProperty()
-    @IsNotEmpty({ message: 'courseId is required' })
-    @IsNumber()
-    courseId: number;
-
     @ApiProperty({
         type: 'string',
         format: 'binary',

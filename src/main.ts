@@ -2,17 +2,20 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import { AllExceptionsFilter } from './common/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  // Activate the filter for the entire program
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   const config = new DocumentBuilder()
     .setTitle('Tesvan API')
     .setDescription('Tesvan platform API description')
     .setVersion('2.0')
-     .addServer('http://localhost:3000', 'local development server')
+    .addServer('http://localhost:3000', 'local development server')
     .addBearerAuth(
       {
         type: 'http',

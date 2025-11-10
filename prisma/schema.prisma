@@ -140,7 +140,7 @@ model CoursePrices {
   id        Int      @id @default(autoincrement())
   courseId  Int
   price     Float
-  discount  Float
+  discount  Float    @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

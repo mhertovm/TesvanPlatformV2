@@ -3,7 +3,7 @@ import { CourseStatus, PrismaService } from 'src/prisma/prisma.service';
 import { UpsertCourseMetaDto } from './dto/upsert-course-meta.dto';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UploadService } from 'src/upload/upload.service';
-import { UpsertPriceCourseDto } from './dto/upsert-price-course.dto';
+import { CreateCoursePriceDto } from './dto/create-course-price.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 
 @Injectable()
@@ -25,11 +25,11 @@ export class CourseService {
         });
     }
 
-    upsertMetaToCourse(data: UpsertCourseMetaDto) {
+    upsertMetaToCourse(data: UpsertCourseMetaDto, courseId: number) {
         return this.db.courseMeta.upsert({
-            where: { courseId: data.courseId },
-            update: { ...data, status: CourseStatus.DRAFT },
-            create: { ...data, status: CourseStatus.DRAFT },
+            where: { courseId },
+            update: { ...data, status: CourseStatus.DRAFT, courseId },
+            create: { ...data, status: CourseStatus.DRAFT, courseId },
         });
     }
 
@@ -57,7 +57,7 @@ export class CourseService {
         });
     }
 
-    createPriceToCourse({ courseId, price, discount }: UpsertPriceCourseDto) {
+    createPriceToCourse({ price, discount }: CreateCoursePriceDto, courseId: number) {
         return this.db.coursePrices.create({
             data: {
                 courseId,

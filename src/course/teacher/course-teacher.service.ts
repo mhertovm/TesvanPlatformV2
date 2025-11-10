@@ -3,7 +3,7 @@ import { CourseService } from '../course.service';
 import { CreateCourseDto } from '../dto/create-course.dto';
 import { CourseUtils } from '../common/course.utils';
 import { UpsertCourseMetaDto } from '../dto/upsert-course-meta.dto';
-import { UpsertPriceCourseDto } from '../dto/upsert-price-course.dto';
+import { CreateCoursePriceDto } from '../dto/create-course-price.dto';
 
 @Injectable()
 export class CourseTeacherService {
@@ -24,33 +24,57 @@ export class CourseTeacherService {
         return this.courseService.updateCourse(id, data, creatorId);
     }
 
-    async upsertMetaToCourse(data: UpsertCourseMetaDto, creatorId: number) {
-        const checkOwnership = await this.utils.checkCourseOwnership(data.courseId, creatorId);
+    async upsertMetaToCourse(data: UpsertCourseMetaDto, courseId: number, creatorId: number) {
+        const checkOwnership = await this.utils.checkCourseOwnership(courseId, creatorId);
         if (!checkOwnership) {
             throw new Error('You do not have permission to modify this course.');
         };
 
-        return this.courseService.upsertMetaToCourse(data);
+        return this.courseService.upsertMetaToCourse(data, courseId);
+    }
+
+    async getCourseMeta(courseId: number, memberId: number) {
+        const course = await this.utils.checkCourseMembershipAndGet(courseId, memberId)
+        if (!course) {
+            throw new Error('You do not have permission to get this course.');
+        };
+        return course?.meta
     }
 
     async upsertImageToCourse(image: Express.Multer.File, courseId: number, creatorId: number) {
         return this.courseService.upsertImageToCourse(courseId, image, creatorId);
     }
 
+    async getCourseImage(courseId: number, memberId: number) {
+        const course = await this.utils.checkCourseMembershipAndGet(courseId, memberId)
+        if (!course) {
+            throw new Error('You do not have permission to get this course.');
+        };
+        return course?.imageUrl
+    }
+
     async deleteCourse(id: number, creatorId: number) {
         return this.courseService.deleteCourse(id, creatorId);
     }
 
-    async createPriceToCourse(data: UpsertPriceCourseDto, creatorId: number) {
-        const checkOwnership = await this.utils.checkCourseOwnership(data.courseId, creatorId);
+    async createPriceToCourse(data: CreateCoursePriceDto, courseId: number, creatorId: number) {
+        const checkOwnership = await this.utils.checkCourseOwnership(courseId, creatorId);
         if (!checkOwnership) {
             throw new Error('You do not have permission to modify this course.');
         }
-        return this.courseService.createPriceToCourse(data);
+        return this.courseService.createPriceToCourse(data, courseId);
     }
 
-    async deletePriceFromCourse(id: number, creatorId: number) {
-        const checkOwnership = await this.utils.checkCourseOwnership(id, creatorId);
+    async getCoursePrice(courseId: number, memberId: number) {
+        const course = await this.utils.checkCourseMembershipAndGet(courseId, memberId)
+        if (!course) {
+            throw new Error('You do not have permission to get this course.');
+        };
+        return course?.price
+    }
+
+    async deletePriceFromCourse(id: number, courseId: number, creatorId: number) {
+        const checkOwnership = await this.utils.checkCourseOwnership(courseId, creatorId);
         if (!checkOwnership) {
             throw new Error('You do not have permission to modify this course.');
         }
@@ -63,6 +87,17 @@ export class CourseTeacherService {
             throw new Error('You do not have permission to modify this course.');
         }
         return this.courseService.addTeacherToCourse(courseId, teacherId);
+    }
+
+    async getCourseTeachers(courseId: number, memberId: number) {
+        // respons one teachers on course
+        const checkCourse = await this.utils.checkCourseMembershipAndGet(courseId, memberId)
+        if (!checkCourse) {
+            throw new Error('You do not have permission to get this course.');
+        };
+        // respons all teachers on course
+        const course = await this.courseService.findOne(courseId);
+        return course?.teachers
     }
 
     async removeTeacherFromCourse(courseId: number, teacherId: number, creatorId: number) {
@@ -79,6 +114,14 @@ export class CourseTeacherService {
             throw new Error('You do not have permission to modify this course.');
         }
         return this.courseService.addStudentToCourse(courseId, studentId);
+    }
+
+    async getCourseStudent(courseId: number, memberId: number) {
+        const course = await this.utils.checkCourseMembershipAndGet(courseId, memberId)
+        if (!course) {
+            throw new Error('You do not have permission to get this course.');
+        };
+        return course?.students
     }
 
     async removeStudentFromCourse(courseId: number, studentId: number, creatorId: number) {
