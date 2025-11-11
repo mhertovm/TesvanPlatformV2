@@ -5,28 +5,29 @@ import { CreateCourseDto } from './dto/create-course.dto';
 import { UploadService } from 'src/upload/upload.service';
 import { CreateCoursePriceDto } from './dto/create-course-price.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { CoursePrismaExtension } from './course.dbPrismaExtension';
 
 @Injectable()
 export class CourseService {
     constructor(
-        private readonly db: PrismaService,
-        private readonly uploadService: UploadService
+        private readonly uploadService: UploadService,
+        private readonly db: CoursePrismaExtension
     ) { }
 
     createCourse(data: CreateCourseDto, creatorId: number) {
-        return this.db.course.create({ data: { ...data, creatorId } });
+        return this.db.default().course.create({ data: { ...data, creatorId } });
     }
 
 
     updateCourse(id: number, data: UpdateCourseDto, creatorId: number) {
-        return this.db.course.update({
+        return this.db.default().course.update({
             where: { id, creatorId },
             data,
         });
     }
 
     upsertMetaToCourse(data: UpsertCourseMetaDto, courseId: number) {
-        return this.db.courseMeta.upsert({
+        return this.db.default().courseMeta.upsert({
             where: { courseId },
             update: { ...data, status: CourseStatus.DRAFT, courseId },
             create: { ...data, status: CourseStatus.DRAFT, courseId },
@@ -45,20 +46,20 @@ export class CourseService {
         // save to cloud storage and get the URL
         const imageUrl = this.uploadService.uploadImg(file).path;
 
-        return this.db.course.update({
+        return this.db.default().course.update({
             where: { id: courseId },
             data: { imageUrl },
         });
     }
 
     deleteCourse(id: number, creatorId: number) {
-        return this.db.course.delete({
+        return this.db.default().course.delete({
             where: { id, creatorId },
         });
     }
 
     createPriceToCourse({ price, discount }: CreateCoursePriceDto, courseId: number) {
-        return this.db.coursePrices.create({
+        return this.db.default().coursePrices.create({
             data: {
                 courseId,
                 price,
@@ -68,14 +69,14 @@ export class CourseService {
     }
 
     deletePriceFromCourse(id: number) {
-        return this.db.coursePrices.delete({
+        return this.db.default().coursePrices.delete({
             where: { id },
         });
     }
 
     addTeacherToCourse(courseId: number, teacherIds: number[]) {
         teacherIds = Array.isArray(teacherIds) ? teacherIds : [teacherIds]
-        return this.db.course.update({
+        return this.db.default().course.update({
             where: { id: courseId },
             data: {
                 teachers: {
@@ -86,7 +87,7 @@ export class CourseService {
     }
 
     removeTeacherFromCourse(courseId: number, teacherId: number) {
-        return this.db.course.update({
+        return this.db.default().course.update({
             where: { id: courseId },
             data: {
                 teachers: {
@@ -99,7 +100,7 @@ export class CourseService {
     addStudentToCourse(courseId: number, studentIds: number[]) {
         studentIds = Array.isArray(studentIds) ? studentIds : [studentIds]
 
-        return this.db.course.update({
+        return this.db.default().course.update({
             where: { id: courseId },
             data: {
                 students: {
@@ -110,7 +111,7 @@ export class CourseService {
     }
 
     removeStudentFromCourse(courseId: number, studentId: number) {
-        return this.db.course.update({
+        return this.db.default().course.update({
             where: { id: courseId },
             data: {
                 students: {
@@ -120,15 +121,27 @@ export class CourseService {
         });
     }
 
-    findAllCoursesByCreator(creatorId: number, take: number, skip: number) {
-        return this.db.course.findMany({
+    findAllCoursesByCreator(creatorId: number, take: number, skip: number, language: string) {
+        return this.db.useLanguge(language).course.findMany({
             take,
             skip,
             orderBy: { createdAt: 'desc' },
             where: { creatorId },
-            include: {
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                shortDescription: true,
+                imageUrl: true,
+                createdAt: true,
+                updatedAt: true,
                 meta: true,
-                category: true,
+                category: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
                 creator: {
                     select: {
                         firstName: true,
@@ -144,7 +157,7 @@ export class CourseService {
     }
 
     findAll() {
-        return this.db.course.findMany({
+        return this.db.useLanguge().course.findMany({
             include: {
                 meta: true,
                 category: true,
@@ -163,7 +176,7 @@ export class CourseService {
     }
 
     findOne(id: number) {
-        return this.db.course.findUnique({
+        return this.db.useLanguge().course.findUnique({
             where: { id },
             include: {
                 meta: true,

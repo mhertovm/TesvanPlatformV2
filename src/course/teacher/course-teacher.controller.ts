@@ -11,6 +11,7 @@ import { UpsertCourseImageDto } from '../dto/upsert-course-image.dto';
 import { AddTeacherCourseDto } from '../dto/add-teacher-course.dto';
 import { DeleteCoursePriceDto } from '../dto/delete-course-price.dto';
 import { DeleteTeacherCourseDto } from '../dto/delete-teacher-course.dto';
+import type { LanguagesType } from 'src/types/language.type';
 
 @AuthAndGuard(['TEACHER'])
 @Controller('course/teacher')
@@ -31,10 +32,11 @@ export class CourseTeacherController {
         @Query('type') type: 'all' | 'creator' = 'all',
         @Query('take') take: number = 10,
         @Query('skip') skip: number = 0,
+        @Query('language') language: string,
         @User() user: JwtPayload
     ) {
         const { sub: teacherId } = user;
-        return await this.courseTeacherService.findAllCourses(teacherId, type, take, skip);
+        return await this.courseTeacherService.findAllCourses(teacherId, type, take, skip, language);
     }
 
     @Put(':id')

@@ -5,29 +5,30 @@ import { CourseUtils } from '../common/course.utils';
 import { UpsertCourseMetaDto } from '../dto/upsert-course-meta.dto';
 import { CreateCoursePriceDto } from '../dto/create-course-price.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CoursePrismaExtension } from '../course.dbPrismaExtension';
 
 @Injectable()
 export class CourseTeacherService {
     constructor(
         private readonly courseService: CourseService,
         private readonly utils: CourseUtils,
-        private readonly db: PrismaService
+        private readonly db: CoursePrismaExtension
     ) { }
 
     async createCourse(data: CreateCourseDto, creatorId: number) {
         return this.courseService.createCourse(data, creatorId);
     }
 
-    async findAllCourses(teacherId: number, type: string, take: number, skip: number) {
+    async findAllCourses(teacherId: number, type: string, take: number, skip: number, language: string) {
         if (type === "creator") {
-            const teacherCourses = await this.courseService.findAllCoursesByCreator(teacherId, take, skip);
+            const teacherCourses = await this.courseService.findAllCoursesByCreator(teacherId, take, skip, language);
             return teacherCourses.map(course => {
                 const { meta, price, teachers, students, ...rest } = course;
                 return rest;
             });
         };
 
-        const teacherCourses = await this.db.course.findMany({
+        const teacherCourses = await this.db.useLanguge(language).course.findMany({
             where: {
                 teachers: {
                     some: {
