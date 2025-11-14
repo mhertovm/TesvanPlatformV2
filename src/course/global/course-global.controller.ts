@@ -1,17 +1,24 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { CourseGlobalService } from './course-global.service';
 
 @Controller('courses')
 export class CourseGlobalController {
-  constructor(private readonly courseGlobalService: CourseGlobalService) {}
+  constructor(private readonly courseGlobalService: CourseGlobalService) { }
 
   @Get()
-  findAll() {
-    return this.courseGlobalService.findAll();
+  findAll(
+    @Query('take') take: number = 10,
+    @Query('skip') skip: number = 0,
+    @Query('language') language: string,
+  ) {
+    return this.courseGlobalService.findAll(take, skip, language);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.courseGlobalService.findOne(+id);
+  findOne(
+    @Param('id') id: number,
+    @Query('language') language: string,
+  ) {
+    return this.courseGlobalService.findOne(+id, language);
   }
 }

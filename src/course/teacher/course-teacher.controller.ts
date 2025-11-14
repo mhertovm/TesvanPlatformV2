@@ -36,7 +36,7 @@ export class CourseTeacherController {
         @User() user: JwtPayload
     ) {
         const { sub: teacherId } = user;
-        return await this.courseTeacherService.findAllCourses(teacherId, type, take, skip, language);
+        return await this.courseTeacherService.findAllCourses(teacherId, type, +take, +skip, language);
     }
 
     @Put(':id')
@@ -46,7 +46,7 @@ export class CourseTeacherController {
         @User() user: JwtPayload
     ) {
         const { sub: creatorId } = user;
-        return await this.courseTeacherService.updateCourse(id, data, creatorId);
+        return await this.courseTeacherService.updateCourse(+id, data, creatorId);
     }
 
     @Delete(':id')
@@ -55,7 +55,7 @@ export class CourseTeacherController {
         @User() user: JwtPayload
     ) {
         const { sub: creatorId } = user;
-        return await this.courseTeacherService.deleteCourse(id, creatorId);
+        return await this.courseTeacherService.deleteCourse(+id, creatorId);
     }
 
     @Post('upsertMetaToCourse/:courseId')
@@ -65,7 +65,7 @@ export class CourseTeacherController {
         @User() user: JwtPayload
     ) {
         const { sub: creatorId } = user;
-        return await this.courseTeacherService.upsertMetaToCourse(data, courseId, creatorId);
+        return await this.courseTeacherService.upsertMetaToCourse(data, +courseId, creatorId);
     }
 
     @Get('courseMeta/:courseId')
@@ -74,7 +74,7 @@ export class CourseTeacherController {
         @User() user: JwtPayload
     ) {
         const { sub: memberId } = user;
-        return await this.courseTeacherService.getCourseMeta(courseId, memberId);
+        return await this.courseTeacherService.getCourseMeta(+courseId, memberId);
     }
 
     @Post('upsertImageToCourse/:courseId')
@@ -86,7 +86,7 @@ export class CourseTeacherController {
         @User() user: JwtPayload
     ) {
         const { sub: creatorId } = user;
-        return await this.courseTeacherService.upsertImageToCourse(image, courseId, creatorId);
+        return await this.courseTeacherService.upsertImageToCourse(image, +courseId, creatorId);
     }
 
     @Get('courseImage/:courseId')
@@ -95,7 +95,7 @@ export class CourseTeacherController {
         @User() user: JwtPayload
     ) {
         const { sub: memberId } = user;
-        return await this.courseTeacherService.getCourseImage(courseId, memberId);
+        return await this.courseTeacherService.getCourseImage(+courseId, memberId);
     }
 
     @Post('createCoursePrice/:courseId')
@@ -105,7 +105,7 @@ export class CourseTeacherController {
         @User() user: JwtPayload
     ) {
         const { sub: creatorId } = user;
-        return await this.courseTeacherService.createPriceToCourse(data, courseId, creatorId);
+        return await this.courseTeacherService.createPriceToCourse(data, +courseId, creatorId);
     }
 
     @Get('coursePrices/:courseId')
@@ -114,7 +114,7 @@ export class CourseTeacherController {
         @User() user: JwtPayload
     ) {
         const { sub: memberId } = user;
-        return await this.courseTeacherService.getCoursePrice(courseId, memberId);
+        return await this.courseTeacherService.getCoursePrice(+courseId, memberId);
     }
 
     @Delete('deleteCoursePrice/:courseId')
@@ -125,7 +125,7 @@ export class CourseTeacherController {
     ) {
         const { sub: creatorId } = user;
         // Ownership check can be added here if needed
-        return await this.courseTeacherService.deletePriceFromCourse(priceId, courseId, creatorId);
+        return await this.courseTeacherService.deletePriceFromCourse(priceId, +courseId, creatorId);
     }
 
     @Post('addTeacherToCourse/:courseId')
@@ -135,16 +135,17 @@ export class CourseTeacherController {
         @User() user: JwtPayload
     ) {
         const { sub: creatorId } = user;
-        return await this.courseTeacherService.addTeacherToCourse(courseId, teacherIds, creatorId);
+        return await this.courseTeacherService.addTeacherToCourse(+courseId, teacherIds, creatorId);
     }
 
     @Get('courseTeachers/:courseId')
     async getCourseTeachers(
         @Param("courseId") courseId: number,
-        @User() user: JwtPayload
+        @User() user: JwtPayload,
+        @Query('language') language: string,
     ) {
         const { sub: memberId } = user;
-        return await this.courseTeacherService.getCourseTeachers(courseId, memberId)
+        return await this.courseTeacherService.getCourseTeachers(+courseId, memberId, language)
     }
 
     @Delete('removeTeacherFromCourse/:courseId')
@@ -154,7 +155,7 @@ export class CourseTeacherController {
         @User() user: JwtPayload
     ) {
         const { sub: creatorId } = user;
-        return await this.courseTeacherService.removeTeacherFromCourse(courseId, teacherId, creatorId);
+        return await this.courseTeacherService.removeTeacherFromCourse(+courseId, teacherId, creatorId);
     }
 
     @Get('courseStudents/:courseId')
@@ -163,6 +164,6 @@ export class CourseTeacherController {
         @User() user: JwtPayload
     ) {
         const { sub: memberId } = user;
-        return await this.courseTeacherService.getCourseStudent(courseId, memberId)
+        return await this.courseTeacherService.getCourseStudent(+courseId, memberId)
     }
 }

@@ -6,6 +6,7 @@ import { UploadService } from 'src/upload/upload.service';
 import { CreateCoursePriceDto } from './dto/create-course-price.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { CoursePrismaExtension } from './course.dbPrismaExtension';
+import { defaultLanguage } from 'src/types/language.type';
 
 @Injectable()
 export class CourseService {
@@ -35,7 +36,7 @@ export class CourseService {
     }
 
     async upsertImageToCourse(courseId: number, file: Express.Multer.File, creatorId: number) {
-        const course = await this.findOne(courseId); // Ensure the course exists
+        const course = await this.findOne(courseId, defaultLanguage); // Ensure the course exists
         if (course?.creatorId !== creatorId) {
             throw new Error('You do not have permission to modify this course.');
         };
@@ -156,8 +157,11 @@ export class CourseService {
         });
     }
 
-    findAll() {
-        return this.db.useLanguge().course.findMany({
+    findAll(take: number, skip: number, language: string) {
+        return this.db.useLanguge(language).course.findMany({
+            take,
+            skip,
+            orderBy: { createdAt: 'desc' },
             include: {
                 meta: true,
                 category: true,
@@ -175,8 +179,8 @@ export class CourseService {
         });
     }
 
-    findOne(id: number) {
-        return this.db.useLanguge().course.findUnique({
+    findOne(id: number, language: string) {
+        return this.db.useLanguge(language).course.findUnique({
             where: { id },
             include: {
                 meta: true,

@@ -9,7 +9,7 @@ export class CoursePrismaExtension {
     ) { }
 
     default() {
-        return this.db
+        return this.db;
     }
 
     useLanguge(language?: string) {
@@ -64,8 +64,8 @@ export class CoursePrismaExtension {
                         },
                     }
                 },
-            },
-        })
+            }
+        });
     }
 }
 

@@ -124,14 +124,14 @@ export class CourseTeacherService {
         return this.courseService.addTeacherToCourse(courseId, teacherIds);
     }
 
-    async getCourseTeachers(courseId: number, memberId: number) {
+    async getCourseTeachers(courseId: number, memberId: number, language: string) {
         // respons one teachers on course
         const checkCourse = await this.utils.checkCourseMembershipAndGet(courseId, memberId)
         if (!checkCourse) {
             throw new Error('You do not have permission to get this course.');
         };
         // respons all teachers on course
-        const course = await this.courseService.findOne(courseId);
+        const course = await this.courseService.findOne(courseId, language);
         return course?.teachers
     }
 
