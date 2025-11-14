@@ -45,7 +45,7 @@ export class CourseService {
             await this.uploadService.deleteFile(course.imageUrl);
         };
         // save to cloud storage and get the URL
-        const imageUrl = this.uploadService.uploadImg(file).path;
+        const imageUrl = this.uploadService.uploadImg(file).filename;
 
         return this.db.default().course.update({
             where: { id: courseId },

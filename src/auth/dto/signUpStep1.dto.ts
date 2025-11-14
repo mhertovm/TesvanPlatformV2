@@ -6,12 +6,4 @@ export class signUpStep1Dto {
     @IsNotEmpty({ message: 'email is required' })
     @IsEmail()
     email: string
-
-    @ApiProperty({required: false})
-    @IsString()
-    firstName?: string
-
-    @ApiProperty({required: false})
-    @IsString()
-    lastName?: string
 }

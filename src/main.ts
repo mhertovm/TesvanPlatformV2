@@ -3,9 +3,14 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './common/all-exceptions.filter';
+// import * as express from 'express';
+// import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  //   // Make upload folder static
+  // app.use('/upload', express.static(join(process.cwd(), 'upload')));
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   // Activate the filter for the entire program

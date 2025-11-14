@@ -7,6 +7,5 @@ export class UpsertCourseImageDto {
         format: 'binary',
         description: 'Img file to be processed',
     })
-    @IsNotEmpty({ message: 'image file is required' })
-    image: string;
+    courseImage: string;
 }

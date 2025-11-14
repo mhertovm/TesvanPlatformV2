@@ -25,7 +25,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         const message =
             exception instanceof HttpException
                 ? exception.getResponse()
-                : (exception as any).message || 'Oops! Something went wrong. Please try again later.';
+                : 'Oops! Something went wrong. Please try again later.';
 
         // For console
         console.error({
@@ -37,7 +37,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
             [401, 403, 429].includes(status) // security-related client errors
         ) {
             // Log file path
-            const logDir = path.join(__dirname, '../../logs');
+            const logDir = path.join(__dirname, '../../../logs');
             const date = new Date().toISOString().split('T')[0];
             const logFile = path.join(logDir, `errors-${date}.log`);
 

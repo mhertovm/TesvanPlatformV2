@@ -7,7 +7,7 @@ export class signInDto {
     @IsString()
     email: string;
 
-    @ApiProperty({ default: "mt91164159" })
+    @ApiProperty({ default: "Mt12345678" })
     @IsNotEmpty({ message: 'password is required' })
     @IsString()
     password: string;

@@ -1,30 +1,45 @@
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { existsSync, mkdirSync } from 'fs';
+import * as path from 'path';
+import * as fs from 'fs';
 
 export const customMulterOptions = {
   storage: diskStorage({
     destination: (req, file, callback) => {
-      let folder = 'upload';
+
+      let logDir = path.join(__dirname, '../../../upload');
 
       if (file.fieldname === 'courseImage') {
-        folder = 'upload/course';
+        logDir = path.join(logDir, 'courseImage');
       } else if (file.fieldname === 'userImage') {
-        folder = 'upload/user';
+        logDir = path.join(logDir, 'userImage');
       } else if (file.fieldname === 'pdf') {
-        folder = 'upload/pdf';
+        logDir = path.join(logDir, 'pdf');
       }
 
-      if (!existsSync(folder)) {
-        mkdirSync(folder, { recursive: true });
+      // Create the upload folder if it doesn't exist
+      if (!fs.existsSync(logDir)) {
+        fs.mkdirSync(logDir, { recursive: true });
       }
 
-      callback(null, folder);
+      callback(null, logDir);
     },
+
     filename: (req, file, callback) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
       const ext = extname(file.originalname);
-      callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+
+      const subDir = file.fieldname === 'courseImage'
+        ? 'courseImage'
+        : file.fieldname === 'userImage'
+          ? 'userImage'
+          : file.fieldname === 'pdf'
+            ? 'pdf'
+            : '';
+
+
+      const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
+      callback(null, filename);
     },
   }),
 

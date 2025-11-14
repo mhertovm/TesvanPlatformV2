@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UploadedFile } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { CourseTeacherService } from './course-teacher.service';
 import { CreateCourseDto } from '../dto/create-course.dto';
 import { AuthAndGuard } from 'src/auth/auth.decorator';
@@ -11,7 +11,7 @@ import { UpsertCourseImageDto } from '../dto/upsert-course-image.dto';
 import { AddTeacherCourseDto } from '../dto/add-teacher-course.dto';
 import { DeleteCoursePriceDto } from '../dto/delete-course-price.dto';
 import { DeleteTeacherCourseDto } from '../dto/delete-teacher-course.dto';
-import type { LanguagesType } from 'src/common/types/language.type';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @AuthAndGuard(['TEACHER'])
 @Controller('course/teacher')
@@ -79,6 +79,7 @@ export class CourseTeacherController {
 
     @Post('upsertImageToCourse/:courseId')
     @ApiConsumes('multipart/form-data')
+    @UseInterceptors(FileInterceptor('courseImage'))
     async upsertImageToCourse(
         @Param('courseId') courseId: number,
         @Body() data: UpsertCourseImageDto, // this add for swager req. binar data

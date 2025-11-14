@@ -10,9 +10,15 @@ import { CourseModule } from './course/course.module';
 import { CourseCategoryModule } from './course-category/course-category.module';
 import { UploadModule } from './upload/upload.module';
 import { LanguageMiddleware } from './common/middleware/language.middleware';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule, UserModule, EmailSenderModule, CourseModule, CourseCategoryModule, UploadModule],
+  imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'upload'),
+    }),
+    ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule, UserModule, EmailSenderModule, CourseModule, CourseCategoryModule, UploadModule],
   controllers: [AppController],
   providers: [AppService],
 })

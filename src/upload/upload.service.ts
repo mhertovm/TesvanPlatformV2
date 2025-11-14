@@ -5,7 +5,7 @@ import * as path from 'path';
 
 @Injectable()
 export class UploadService {
-  private readonly uploadDir = './upload';
+  private readonly uploadDir = path.join(__dirname, '../../../upload');
 
   uploadImg(file: Express.Multer.File) {
     const allowedExts = ['.jpg', '.jpeg', '.png', '.webp'];

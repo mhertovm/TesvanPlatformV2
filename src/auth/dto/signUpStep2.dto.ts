@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsDate, MinLength, MaxLength, Matches, IsEmail, IsIn } from 'class-validator';
+import { IsString, IsNotEmpty, IsDate, MinLength, MaxLength, Matches, IsEmail, IsIn, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class signUpStep2Dto {
@@ -40,8 +40,8 @@ export class signUpStep2Dto {
     @IsString()
     englishLevel: string
 
-    @ApiProperty()
-    @IsString()
+    @ApiProperty({ type: Boolean })
+    @IsBoolean()
     QABackground: boolean
 
     @ApiProperty()

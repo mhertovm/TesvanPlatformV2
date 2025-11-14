@@ -175,20 +175,15 @@ export class AuthService {
             throw new UnauthorizedException('User with this email already exists.');
         };
 
-        const existing = await this.db.pendingRepo.findFirst({
-            where: {
-                email: signUpStep1Dto.email,
-            },
+        await this.db.pendingRepo.deleteMany({
+            where: { email: signUpStep1Dto.email },
         });
 
-        const pending = existing
-            ? existing
-            : await this.db.pendingRepo.create({
-                data: signUpStep1Dto,
-            });
+        const pending = await this.db.pendingRepo.create({
+            data: { email: signUpStep1Dto.email },
+        });
 
-        const { email, lastName, firstName } = pending;
-        return { email, lastName, firstName };
+        return pending.email;
     }
 
     async signUpStep2(signUpStep2Dto: signUpStep2Dto) {
