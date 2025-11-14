@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
-import { defaultLanguage, LanguagesType, validLanguages } from "src/types/language.type";
+import { defaultLanguage, LanguagesType, validLanguages } from "src/common/types/language.type";
 
 @Injectable()
 export class CoursePrismaExtension {
@@ -13,10 +13,6 @@ export class CoursePrismaExtension {
     }
 
     useLanguge(language?: string) {
-        const lang = language ?? defaultLanguage;
-        if (!validLanguages.includes(lang as LanguagesType)) {
-            throw new Error(`Invalid language: ${lang}`);
-        }
 
         return this.db.$extends({
             result: {

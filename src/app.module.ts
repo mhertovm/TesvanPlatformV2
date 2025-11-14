@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -9,10 +9,18 @@ import { EmailSenderModule } from './email-sender/email-sender.module';
 import { CourseModule } from './course/course.module';
 import { CourseCategoryModule } from './course-category/course-category.module';
 import { UploadModule } from './upload/upload.module';
+import { LanguageMiddleware } from './common/middleware/language.middleware';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule, UserModule, EmailSenderModule, CourseModule, CourseCategoryModule, UploadModule],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LanguageMiddleware)
+      .forRoutes('*');
+  }
+}

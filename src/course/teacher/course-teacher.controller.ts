@@ -11,7 +11,7 @@ import { UpsertCourseImageDto } from '../dto/upsert-course-image.dto';
 import { AddTeacherCourseDto } from '../dto/add-teacher-course.dto';
 import { DeleteCoursePriceDto } from '../dto/delete-course-price.dto';
 import { DeleteTeacherCourseDto } from '../dto/delete-teacher-course.dto';
-import type { LanguagesType } from 'src/types/language.type';
+import type { LanguagesType } from 'src/common/types/language.type';
 
 @AuthAndGuard(['TEACHER'])
 @Controller('course/teacher')

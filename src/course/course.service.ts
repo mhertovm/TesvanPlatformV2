@@ -6,7 +6,7 @@ import { UploadService } from 'src/upload/upload.service';
 import { CreateCoursePriceDto } from './dto/create-course-price.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { CoursePrismaExtension } from './course.dbPrismaExtension';
-import { defaultLanguage } from 'src/types/language.type';
+import { defaultLanguage } from 'src/common/types/language.type';
 
 @Injectable()
 export class CourseService {
